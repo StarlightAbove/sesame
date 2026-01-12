@@ -20,7 +20,7 @@
 #' seg <- cnSegmentation(sset, ssets.normal)
 #' 
 #' @export
-cnSegmentation <- function(sset, ssets.normal, refversion=c('hg19','hg38')) {
+cnSegmentation <- function(sset, ssets.normal, refversion=c('hg19','hg38'), tilewidth = 50000) {
 
     stopifnot(is(sset, "SigSet"))
     pkgTest('GenomicRanges')
@@ -50,7 +50,7 @@ cnSegmentation <- function(sset, ssets.normal, refversion=c('hg19','hg38')) {
 
     ## bin signals
     ## fix bin coordinates, TODO: this is too time-consuming
-    bin.coords <- getBinCoordinates(seqInfo, gapInfo, probe.coords)
+    bin.coords <- getBinCoordinates(seqInfo, gapInfo, probe.coords, tile.width = tilewidth)
     bin.signals <- binSignals(probe.signals, bin.coords, probe.coords)
 
     ## segmentation
@@ -122,13 +122,13 @@ leftRightMerge1 <- function(chrom.windows, min.probes.per.bin=20) {
 #' @param gapInfo chromosome gap information
 #' @param probe.coords probe coordinates
 #' @return bin.coords
-getBinCoordinates <- function(seqInfo, gapInfo, probe.coords) {
+getBinCoordinates <- function(seqInfo, gapInfo, probe.coords, tile.width = 50000) {
 
     pkgTest('GenomicRanges')
     pkgTest('IRanges')
 
     tiles <- sort(GenomicRanges::tileGenome(
-        seqInfo, tilewidth=50000, cut.last.tile.in.chrom = TRUE))
+        seqInfo, tilewidth=tile.width, cut.last.tile.in.chrom = TRUE))
     
     tiles <- sort(c(
         GenomicRanges::setdiff(tiles[seq(1, length(tiles), 2)], gapInfo), 
